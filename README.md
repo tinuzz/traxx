@@ -28,3 +28,6 @@ It can also be used as a module from another python program:
 	import mp3hash
 	h = mp3hash.mp3hash ()
 	md5 = h.mp3hash (filename)[0]
+
+Known limitation: it cannot create a new ID3 tag, so saving the MD5 hash
+to a file that doesn't already have a tag will fail.
