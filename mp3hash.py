@@ -62,7 +62,7 @@ class mp3hash(object):
                 mp3.add(TXXX(encoding=3, desc=u'MD5', text=[self.fsum]))
                 mp3.save()
             except mutagen.id3.ID3NoHeaderError:
-                print "No Header Error"
+                print "No Header Error: %s" % self.fname
                 pass
             except IOError:
                 print "Couldn't write header."
