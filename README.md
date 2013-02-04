@@ -34,6 +34,8 @@ to a file that doesn't already have a tag will fail.
 
 * mp3hash_all
 
+Mp3hash_all uses mp3hash.py to recursively tag all mp3s in a directory tree.
+
 	usage: mp3hash_all [-h] directory
 
 	mp3hash_all - recursively traverse a directory, hashing all found mp3s and
