@@ -1,0 +1,48 @@
+#!/usr/bin/python
+#
+#   Copyright 2012 Martijn Grendelman <m@rtijn.net>
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+import argparse      # apt-get install python-argparse (for < 2.7)
+import os
+import mp3hash
+
+def handle_file (path, fname):
+
+    filename = os.path.join (path, fname)
+    h = mp3hash.mp3hash ()
+
+    try:
+        hh = h.mp3hash (filename)
+        print "%s  %s" % (hh[0], hh[1])
+        h.writemd5()
+    except IOError, e:
+        print "Could not open file: %s" % e
+
+def traverse (path):
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            name, extension = os.path.splitext(f)
+            if extension == ".mp3":
+                handle_file(root, f)
+
+def process_options():
+    parser = argparse.ArgumentParser(description='mp3hash_all - recursively traverse a directory, hashing all found mp3s and store the hash in the ID3 tag of the file',
+        formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog,max_help_position=36))
+    parser.add_argument('directory', help='the directory to scan for mp3s')
+    args = parser.parse_args()
+    return args.directory
+
+rootdir = process_options()
+traverse(rootdir)

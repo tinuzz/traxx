@@ -31,3 +31,17 @@ It can also be used as a module from another python program:
 
 Known limitation: it cannot create a new ID3 tag, so saving the MD5 hash
 to a file that doesn't already have a tag will fail.
+
+* mp3hash_all
+
+	usage: mp3hash_all [-h] directory
+
+	mp3hash_all - recursively traverse a directory, hashing all found mp3s and
+	store the hash in the ID3 tag of the file
+
+	positional arguments:
+		directory   the directory to scan for mp3s
+
+	optional arguments:
+		-h, --help  show this help message and exit
+
