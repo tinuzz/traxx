@@ -25,6 +25,6 @@ The calculated hash can optionally be stored inside the mp3 as a TXXX tag.
 
 It can also be used as a module from another python program:
 
-  import mp3hash
-  h = mp3hash.mp3hash ()
-  md5 = h.mp3hash (filename)[0]
+	import mp3hash
+	h = mp3hash.mp3hash ()
+	md5 = h.mp3hash (filename)[0]
