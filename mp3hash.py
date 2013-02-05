@@ -85,7 +85,8 @@ if __name__ == "__main__":
     try:
         hh = h.mp3hash (h.fname)
         print "%s  %s" % (hh[0], hh[1])
-        if h.storehash:
-            h.writemd5()
     except IOError, e:
         print "Could not open file: %s" % e
+
+    if h.storehash:
+        h.writemd5()
