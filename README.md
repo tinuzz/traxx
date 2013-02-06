@@ -61,7 +61,7 @@ does two things:
   the database accordingly
 
 It has only been tested with MySQL, but since it utilizes SQLAlchemy for all
-database operations, it should be easy to port to PostgreSQL, for example.
+atabase operations, it should be easy to port to PostgreSQL, for example.
 
 It uses several external Python modules:
 - sqlalchemy for database access
@@ -70,6 +70,8 @@ It uses several external Python modules:
 - pyinotify  for monitoring the music library
 - argparse   for parsing command line arguments (external to Python < 2.7)
 - mp3hash    (see above) for creating ID3-independent hashes of mp3 files
+
+Here's how it's used:
 
 	usage: mindexd [-h] [-D] [-f] [-m] [-H <hostname>] [-u <username>]
 								 [-p <password>] [-n <database>] [-l <file>]
@@ -111,7 +113,7 @@ Getting started
   This may take a while. Add '-n <dbname>' if your database is not called
   'musiclib'.
 
-  mindexd -u <user> </path/to/musicdir>
+	mindexd -u <user> </path/to/musicdir>
 
 * Now start mindexd in the background to monitor you music collection and keep
   the database up to date.
