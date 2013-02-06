@@ -1,0 +1,400 @@
+#!/usr/bin/python
+#
+#   Copyright 2013 Martijn Grendelman <m@rtijn.net>
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+"""
+mindexd - Music Indexing Daemon
+
+Mindexd is a daemon that indexes a music collection in the background.
+Given a root-directory, it traverses it and all its subdirectories,
+adding any music file it finds to a MySQL database, or updating its
+properties in the database if the song is already present.
+
+After finishing the initial scan of the tree, it monitors the tree
+(using the inotify framework) and re-scans files that have been
+modified.
+
+It uses several external Python modules:
+- sqlalchemy for database access
+- mutagen    for reading ID3 tags and other music properties
+- daemon     for daemonizing itself into the background
+- pyinotify  for monitoring the music library
+- argparse   for parsing command line arguments (external to Python < 2.7)
+
+"""
+import mutagen
+from mutagen.mp3 import MP3  # apt-get install python-mutagen
+from mutagen.id3 import ID3
+import sqlalchemy
+from sqlalchemy import *     # apt-get install python-sqlalchemy
+from sqlalchemy.sql import func
+import daemon                # apt-get install python-daemon
+import pyinotify             # apt-get install python-pyinotify
+import signal
+import os
+import sys
+import logging
+import logging.handlers
+import threading
+import time
+import argparse              # apt-get install python-argparse (for < 2.7)
+import mp3hash
+from pprint import pprint,pformat
+
+qlock = threading.Lock()
+
+def handle_signal(sig, _frame):
+    signals = dict((k, v) for v, k in signal.__dict__.iteritems() if v.startswith('SIG'))
+    app.logger.debug ("Received signal (%s)" % signals[sig])
+    if sig == signal.SIGUSR1:
+        pass
+    else:
+        app.logger.info("Terminating")
+        app.notifier.stop()
+        app.run = False
+
+class StreamToLogger(object):
+    """
+    Fake file-like stream object that redirects writes to a logger instance.
+    """
+    def __init__(self, logger, log_level=logging.ERROR):
+        self.logger = logger
+        self.log_level = log_level
+        self.linebuf = ''
+
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+            self.logger.log(self.log_level, line.rstrip())
+
+class InotifyEventHandler (pyinotify.ProcessEvent):
+    def process_IN_CLOSE_WRITE(self, event):
+        app.logger.debug("Modified: %s" %  event.pathname)
+        with qlock:
+            app.queue.add(event.pathname)
+        #app.logger.debug(pformat(app.queue))
+
+    def process_IN_DELETE(self, event):
+        app.logger.debug("Deleted: %s" %  event.pathname)
+        app.delete_from_db(event)
+
+    def process_IN_MOVED_TO(self, event):
+        app.logger.debug("Moved file: %s" %  event.pathname)
+        with qlock:
+            app.queue.add(event.pathname)
+        #app.logger.debug(pformat(event))
+        app.logger.debug(pformat(app.queue))
+
+class App (object):
+
+    def __init__(self):
+        self.run          = True
+        self.daemonize    = False
+        self.rootdir      = False
+        self.song         = {}
+        self.logfile      = '/tmp/mindexd.log'
+        self.level        = logging.INFO
+        self.queue        = set([])
+        self.initdb       = False
+        self.writemd5     = False
+        self.dbc          = False
+        self.db_songtable = False
+
+        self.dbengine  = 'mysql'
+        self.dbhost    = 'localhost'
+        self.dbuser    = 'musiclib'
+        self.dbpass    = ''
+        self.db        = 'musiclib'
+        self.dbtable   = 'songlib'
+
+        # When the optional full scan is finished, this flag is set to True.
+        self.init_done    = False
+
+    def process_options (self):
+        parser = argparse.ArgumentParser(description='Music Indexing Daemon', formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog,max_help_position=38))
+        parser.add_argument('rootdir', help='the directory to index and monitor')
+        parser.add_argument('-D', '--daemonize', action='store_true', dest='daemonize', help='run mindexd in the background')
+        parser.add_argument('-f', '--full',      action='store_true', dest='full',      help='do a full directory scan at startup')
+        parser.add_argument('-m', '--md5',       action='store_true', dest='md5',       default=self.writemd5, help='write MD5 checksum to ID3')
+
+        parser.add_argument('-H', '--dbhost',    action='store',      dest='dbhost',    metavar='<hostname>', default=self.dbhost, help='database server')
+        parser.add_argument('-u', '--dbuser',    action='store',      dest='dbuser',    metavar='<username>', default=self.dbuser, help='database user')
+        parser.add_argument('-p', '--dbpass',    action='store',      dest='dbpass',    metavar='<password>', help='database password')
+        parser.add_argument('-n', '--dbname',    action='store',      dest='dbname',    metavar='<database>', default=self.db, help='database name')
+
+        parser.add_argument('-l', '--logfile',   action='store',      dest='logfile',   metavar='<file>', default=self.logfile,  help='logfile')
+        parser.add_argument('--loglevel',        action='store',      dest='loglevel',  metavar='<level>',
+            default=logging._levelNames[self.level].lower(), help='loglevel, valid levels are <debug|info|warning|error|critical>')
+        args = parser.parse_args()
+
+        self.rootdir   = args.rootdir
+        self.daemonize = args.daemonize
+        self.initdb    = args.full
+        self.logfile   = args.logfile
+
+        self.dbhost    = args.dbhost
+        self.dbuser    = args.dbuser
+        self.dbpass    = args.dbpass
+        self.db        = args.dbname
+
+        # Silently ignore invalid loglevel
+        newlevel = getattr(logging, args.loglevel.upper(), None)
+        if not newlevel is None:
+            self.level = newlevel
+
+    def setup_logging(self):
+        os.umask(022)
+        self.logger = logging.getLogger()
+        self.logger.setLevel(self.level)
+        formatter = logging.Formatter('%(asctime)s [%(process)d] %(levelname)s: %(message)s','%Y-%m-%d %H:%M:%S')
+        try:
+            loghandler = logging.handlers.WatchedFileHandler(self.logfile)
+        except IOError:
+            print "Could not open logfile (%s)" % self.logfile
+            return False
+
+        loghandler.setFormatter(formatter)
+        self.logger.addHandler(loghandler)
+
+        if self.daemonize == True:
+           # Redirect stdout and stderr to logger, using StreamToLogger object that handles writes
+            sys.stdout = StreamToLogger(self.logger, logging.INFO)
+            sys.stderr = StreamToLogger(self.logger, logging.ERROR)
+
+        else:
+            # Set up a second loghandler, that writes to stderr
+            loghandler2 = logging.StreamHandler(sys.stderr)
+            loghandler2.setFormatter(formatter)
+            self.logger.addHandler(loghandler2)
+
+        return True
+
+    def log_config (self):
+        self.logger.info("Current configuration:")
+        self.logger.info("- Root directory     : %s" % self.rootdir)
+        self.logger.info("- Full directory scan: %s" % str(self.initdb))
+        self.logger.info("- Logfile            : %s" % self.logfile)
+        self.logger.info("- Loglevel           : %s" % logging._levelNames[self.level])
+
+    # Delete a record from the database. Takes a pyinotify event as arg.
+    def delete_from_db (self, event):
+        s = self.db_songtable.delete().where(self.db_songtable.c.path == event.path).\
+            where(self.db_songtable.c.filename == event.name)
+        self.logger.debug(str(s))
+
+    def write_to_db (self, song, mode="insert"):
+        #song['lastseen'] = func.now()
+        song['lastseen'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
+        #song['lastplayed'] = func.now()
+        if mode == "insert":
+            self.dbc.execute(self.db_songtable.insert(), [song])
+        elif mode == "update":
+            self.dbc.execute(self.db_songtable.update().where(self.db_songtable.c.id == song['id']), [song])
+
+    def get_songinfo (self, path, fname):
+
+        # info is the data gathering dictionary
+        # info['filedata'] is the data from mutagen
+        # info['statinfo'] is the info from os.stat
+        # song is the flattened result object
+
+        info = {}
+        song = {}
+        filename = os.path.join (path, fname)
+
+        os.stat_float_times(False)
+        info['statinfo'] = os.stat(filename)
+        try:
+            info['filedata'] = mutagen.File(filename)
+        except Exception as e:
+            self.logger.warn(u'Could not read tag from "%s": %s' % (filename, e))
+            return False
+
+        song['path'] = path
+        song['filename'] = fname
+
+        fieldmap  = {
+            'artist':     lambda info: info['filedata']['TPE1'][0],
+            'title':      lambda info: info['filedata']['TIT2'][0],
+            'album':      lambda info: info['filedata']['TALB'][0],
+            'genre':      lambda info: info['filedata']['TCON'][0],
+            'trackno':    lambda info: info['filedata']['TRCK'][0],
+            'year':       lambda info: info['filedata']['TYER'][0],
+            'bitrate':    lambda info: info['filedata'].info.bitrate,
+            'length':     lambda info: info['filedata'].info.length,
+            'samplerate': lambda info: info['filedata'].info.sample_rate,
+            'mtime':      lambda info: info['statinfo'].st_mtime,
+            'size':       lambda info: info['statinfo'].st_size,
+        }
+
+        for k,v in fieldmap.items():
+            try:
+                song[k] = v(info)
+            except KeyError:
+                if k == 'year':
+                    song[k] = 0
+                else:
+                    song[k] = ''
+
+        song['bitratecl'] = 'V'
+        if int(song['bitrate']) % 1000 == 0:
+            song['bitratecl'] = 'C'
+
+        try:
+            song['md5'] = info['filedata']['TXXX:MD5'][0]
+            self.logger.debug("MD5 found in ID3 tags, using %s" % song['md5'])
+        except KeyError:
+            h = mp3hash.mp3hash ()
+            song['md5'] = h.mp3hash (filename)[0]
+
+            # Only write hashes to files after the initial full scan has finished,
+            # otherwise the inotify thread will queue the file to be re-scanned
+            if self.writemd5 and self.init_done:
+                h.writemd5()
+
+        return song
+
+    def handle_file (self, path, fname):
+
+        self.logger.info ("Handling %s/%s" % (path, fname))
+        self.ensure_dbc()
+        song = self.get_songinfo (path, fname)
+
+        if song:
+
+            handled = False
+            sql = select([self.db_songtable], self.db_songtable.c.md5 == song['md5'])
+            for row in self.dbc.execute(sql):
+                dbfile =  os.path.join (row[self.db_songtable.c.path], row[self.db_songtable.c.filename])
+                if handled:
+                    break
+
+                # if the path of the file in the database is the same...
+                if row[self.db_songtable.c.path] == song['path'] and row[self.db_songtable.c.filename] == song['filename']:
+                    # and the file's mtime is more recent than the one in the database...
+                    if song['mtime'] > row[self.db_songtable.c.mtime]:
+                        # update it.
+                        self.logger.debug("Song '%s' already present. Updating." % song['filename'])
+                        song['id'] = row[self.db_songtable.c.id]
+                        self.write_to_db(song, "update")
+                    else:
+                        self.logger.debug("'%s' is up to date, no need to update." % song['filename'])
+                    handled = True
+
+                elif not os.path.exists (dbfile):
+                    self.logger.debug("Song '%s' moved. Updating." % song['filename'])
+                    song['id'] = row[self.db_songtable.c.id]
+                    self.write_to_db(song, "update")
+                    handled = True
+
+            if not handled:
+                self.write_to_db(song, "insert")
+
+    def start_inotify (self):
+        self.logger.info("Starting inotify thread")
+        wm = pyinotify.WatchManager()
+        mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE | pyinotify.IN_MOVED_TO
+        self.notifier = pyinotify.ThreadedNotifier(wm, InotifyEventHandler())
+        self.notifier.start()
+        wdd = wm.add_watch(self.rootdir, mask, rec=True, auto_add=True)
+
+    def traverse (self, path):
+        for root, dirs, files in os.walk(path):
+            for f in files:
+                name, extension = os.path.splitext(f)
+                if extension == ".mp3":
+                    self.handle_file(root, f)
+                if not self.run:
+                    break
+            if not self.run:
+                break
+
+    def ensure_dbc(self):
+        try:
+            # if self.dbc hasn't been initialized, this will raise an AttributeError
+            self.dbc.execute(select([func.now()]))
+        except (sqlalchemy.exc.OperationalError, AttributeError):
+            db_is_gone = True
+            self.logger.warn('No database connection. Trying to connect.')
+            while db_is_gone and app.run:
+                try:
+                    if not self.db_songtable:
+                        self.db_songtable = Table(self.dbtable, self.db_metadata, autoload=True)
+                    self.dbc = self.db_engine.connect()
+                    db_is_gone = False
+                    self.logger.info('Database connection established.')
+                except sqlalchemy.exc.OperationalError, e:
+                    self.logger.warn('Establishing database connection failed. Trying again in 20 seconds.')
+                    self.logger.warn('Database error: %s' % e.message)
+                    time.sleep(20)
+
+    def main(self):
+        if self.setup_logging():
+            self.logger.info("Starting application")
+            self.log_config()
+            self.start_inotify()
+
+            try:
+                self.db_engine = create_engine(self.dbengine + '://' + self.dbuser + ':' + self.dbpass + '@' + self.dbhost + '/' + self.db + '?charset=utf8')
+                if self.level == logging.DEBUG:
+                    self.db_engine.echo = True
+                self.db_metadata = MetaData(self.db_engine)
+                self.ensure_dbc()
+
+                # Do an optional initial full scan
+                if self.initdb:
+                    self.traverse(self.rootdir)
+
+                self.init_done  = True
+
+                # Process the queue forever
+                while self.run:
+                    while len(self.queue):
+                        with qlock:
+                            ff = self.queue.pop()
+                        d,f = os.path.split(ff)
+                        name, extension = os.path.splitext(f)
+                        if extension == ".mp3":
+                            self.handle_file(d, f)
+                    time.sleep(5)
+
+            except Exception:
+                handle_signal(signal.SIGINT, 0)
+                raise
+
+if __name__ == "__main__":
+
+    app = App()
+    app.process_options()
+
+    if not os.path.exists(app.rootdir):
+        print "Directory %s does not exist. Exiting." % app.rootdir
+        sys.exit(1)
+
+    if app.daemonize == True:
+        context = daemon.DaemonContext()
+        context.signal_map = {
+            signal.SIGTERM: handle_signal,
+            signal.SIGINT: handle_signal,
+            signal.SIGUSR1: handle_signal
+        }
+
+        with context:
+            app.main()
+
+    else:
+        signal.signal (signal.SIGTERM, handle_signal)
+        signal.signal (signal.SIGINT, handle_signal)
+        signal.signal (signal.SIGUSR1, handle_signal)
+        app.main()

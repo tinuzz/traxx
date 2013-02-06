@@ -3,7 +3,8 @@ musiclib
 
 Some programs for maintaining a database of mp3s:
 
-* mp3hash.py
+mp3hash.py
+----------
 
 A small Python program / module for calculating a MD5 hash of an mp3 file.
 This hash can be used to identify a file by its musical content, i.e. any
@@ -32,7 +33,8 @@ It can also be used as a module from another python program:
 Known limitation: it cannot create a new ID3 tag, so saving the MD5 hash
 to a file that doesn't already have a tag will fail.
 
-* mp3hash_all
+mp3hash_all
+-----------
 
 Mp3hash_all uses mp3hash.py to recursively tag all mp3s in a directory tree.
 
@@ -46,4 +48,85 @@ Mp3hash_all uses mp3hash.py to recursively tag all mp3s in a directory tree.
 
 	optional arguments:
 		-h, --help  show this help message and exit
+
+mindexd
+-------
+
+Mindexd is a daemon for keeping a music database up to date. It basically
+does two things:
+
+- do an initial full scan of the root directory, adding all the mp3 files it
+  finds to the database
+- after the full scan, it monitors the root directory for changes and updates
+  the database accordingly
+
+It has only been tested with MySQL, but since it utilizes SQLAlchemy for all
+database operations, it should be easy to port to PostgreSQL, for example.
+
+It uses several external Python modules:
+- sqlalchemy for database access
+- mutagen    for reading ID3 tags and other music properties
+- daemon     for daemonizing itself into the background
+- pyinotify  for monitoring the music library
+- argparse   for parsing command line arguments (external to Python < 2.7)
+- mp3hash    (see above) for creating ID3-independent hashes of mp3 files
+
+	usage: mindexd [-h] [-D] [-f] [-m] [-H <hostname>] [-u <username>]
+								 [-p <password>] [-n <database>] [-l <file>]
+								 [--loglevel <level>]
+								 rootdir
+
+	Music Indexing Daemon
+
+	positional arguments:
+		rootdir                             the directory to index and monitor
+
+	optional arguments:
+		-h, --help                          show this help message and exit
+		-D, --daemonize                     run mindexd in the background (default:
+																				False)
+		-f, --full                          do a full directory scan at startup
+																				(default: False)
+		-m, --md5                           write MD5 checksum to ID3 (default:
+																				False)
+		-H <hostname>, --dbhost <hostname>  database server (default: localhost)
+		-u <username>, --dbuser <username>  database user (default: musiclib)
+		-p <password>, --dbpass <password>  database password (default: None)
+		-n <database>, --dbname <database>  database name (default: musiclib)
+		-l <file>, --logfile <file>         logfile (default: /tmp/mindexd.log)
+		--loglevel <level>                  loglevel, valid levels are
+																				<debug|info|warning|error|critical>
+																				(default: info)
+
+Getting started
+---------------
+
+* Create a MySQL database. The default name is 'musiclib', but you can name it
+  anything you want.
+* Add the songtable to the database, from the provided SQL file.
+
+	mysql -u <user> musiclib < musiclib-mysql.sql
+
+* If your mp3 collection is large, perform an initial scan in the foreground.
+  This may take a while. Add '-n <dbname>' if your database is not called
+  'musiclib'.
+
+  mindexd -u <user> </path/to/musicdir>
+
+* Now start mindexd in the background to monitor you music collection and keep
+  the database up to date.
+
+	mindexd -D -u <user> </path/to/musicdir>
+
+Try adding files to your collection, moving files around or editing ID3 tags,
+and see your changes updated in your database within seconds.
+
+
+License
+-------
+
+All software in this project is licensed under the Apache License, version 2.0.
+A copy of the license can be found in the 'COPYING' file and on the web [1].
+
+* [6] <http://www.apache.org/licenses/LICENSE-2.0>
 
