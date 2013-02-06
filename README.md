@@ -15,7 +15,7 @@ does two things:
   the database accordingly
 
 It has only been tested with MySQL, but since it utilizes SQLAlchemy for all
-atabase operations, it should be easy to port to PostgreSQL, for example.
+database operations, it should be easy to port to PostgreSQL, for example.
 
 It uses several external Python modules:
 - sqlalchemy for database access
