@@ -9,7 +9,7 @@ mindexd
 Mindexd is a daemon for keeping a music database up to date. It basically
 does two things:
 
-- do an initial full scan of the root directory, adding all the mp3 files it
+- do an initial full recursive scan of the root directory, adding all the mp3 files it
   finds to the database
 - after the full scan, it monitors the root directory for changes and updates
   the database accordingly
