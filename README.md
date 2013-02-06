@@ -125,5 +125,5 @@ License
 All software in this project is licensed under the Apache License, version 2.0.
 A copy of the license can be found in the 'COPYING' file and on the web [1].
 
-* [6] <http://www.apache.org/licenses/LICENSE-2.0>
+* [1] <http://www.apache.org/licenses/LICENSE-2.0>
 
