@@ -102,18 +102,18 @@ Getting started
   anything you want.
 * Add the songtable to the database, from the provided SQL file.
 
-	mysql -u <user> musiclib < musiclib-mysql.sql
+	mysql -u &lt;user&gt; musiclib &lt; musiclib-mysql.sql
 
 * If your mp3 collection is large, perform an initial scan in the foreground.
-  This may take a while. Add '-n <dbname>' if your database is not called
+  This may take a while. Add '-n &lt;dbname&gt;' if your database is not called
   'musiclib'.
 
-	mindexd -u <user> </path/to/musicdir>
+	mindexd -u &lt;user&gt; &lt;/path/to/musicdir&gt;
 
 * Now start mindexd in the background to monitor you music collection and keep
   the database up to date.
 
-	mindexd -D -u <user> </path/to/musicdir>
+	mindexd -D -u &lt;user&gt; &lt;/path/to/musicdir&gt;
 
 Try adding files to your collection, moving files around or editing ID3 tags,
 and see your changes updated in your database within seconds.
