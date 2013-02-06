@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-#   Copyright 2012 Martijn Grendelman <m@rtijn.net>
+#   Copyright 2013 Martijn Grendelman <m@rtijn.net>
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
