@@ -74,9 +74,8 @@ It uses several external Python modules:
 Here's how it's used:
 
 	usage: mindexd [-h] [-D] [-f] [-m] [-H <hostname>] [-u <username>]
-								 [-p <password>] [-n <database>] [-l <file>]
-								 [--loglevel <level>]
-								 rootdir
+				 [-p <password>] [-n <database>] [-l <file>]
+				 [--loglevel <level>] rootdir
 
 	Music Indexing Daemon
 
@@ -85,20 +84,16 @@ Here's how it's used:
 
 	optional arguments:
 		-h, --help                          show this help message and exit
-		-D, --daemonize                     run mindexd in the background (default:
-																				False)
-		-f, --full                          do a full directory scan at startup
-																				(default: False)
-		-m, --md5                           write MD5 checksum to ID3 (default:
-																				False)
+		-D, --daemonize                     run mindexd in the background (default: False)
+		-f, --full                          do a full directory scan at startup (default: False)
+		-m, --md5                           write MD5 checksum to ID3 (default: False)
 		-H <hostname>, --dbhost <hostname>  database server (default: localhost)
 		-u <username>, --dbuser <username>  database user (default: musiclib)
 		-p <password>, --dbpass <password>  database password (default: None)
 		-n <database>, --dbname <database>  database name (default: musiclib)
 		-l <file>, --logfile <file>         logfile (default: /tmp/mindexd.log)
 		--loglevel <level>                  loglevel, valid levels are
-																				<debug|info|warning|error|critical>
-																				(default: info)
+													<debug|info|warning|error|critical> (default: info)
 
 Getting started
 ---------------
