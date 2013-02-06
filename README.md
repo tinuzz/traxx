@@ -93,7 +93,7 @@ Here's how it's used:
 		-n <database>, --dbname <database>  database name (default: musiclib)
 		-l <file>, --logfile <file>         logfile (default: /tmp/mindexd.log)
 		--loglevel <level>                  loglevel, valid levels are
-													<debug|info|warning|error|critical> (default: info)
+											<debug|info|warning|error|critical> (default: info)
 
 Getting started
 ---------------
