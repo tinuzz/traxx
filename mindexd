@@ -80,21 +80,18 @@ class StreamToLogger(object):
 
 class InotifyEventHandler (pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
-        app.logger.debug("Modified: %s" %  event.pathname)
         with qlock:
             app.queue.add(event.pathname)
-        #app.logger.debug(pformat(app.queue))
+        app.logger.info("Queued modified file: %s" %  event.pathname)
 
     def process_IN_DELETE(self, event):
-        app.logger.debug("Deleted: %s" %  event.pathname)
         app.delete_from_db(event)
+        app.logger.info("Deleted file: %s" %  event.pathname)
 
     def process_IN_MOVED_TO(self, event):
-        app.logger.debug("Moved file: %s" %  event.pathname)
         with qlock:
             app.queue.add(event.pathname)
-        #app.logger.debug(pformat(event))
-        app.logger.debug(pformat(app.queue))
+        app.logger.info("Queued moved file: %s" %  event.pathname)
 
 class App (object):
 
@@ -267,7 +264,7 @@ class App (object):
 
     def handle_file (self, path, fname):
 
-        self.logger.info ("Handling %s/%s" % (path, fname))
+        self.logger.debug ("Handling %s/%s" % (path, fname))
         self.ensure_dbc()
         song = self.get_songinfo (path, fname)
 
@@ -310,15 +307,21 @@ class App (object):
         wdd = wm.add_watch(self.rootdir, mask, rec=True, auto_add=True)
 
     def traverse (self, path):
+        num = 0
         for root, dirs, files in os.walk(path):
             for f in files:
                 name, extension = os.path.splitext(f)
                 if extension == ".mp3":
                     self.handle_file(root, f)
+                    num += 1
+                    if num % 500 == 0:
+                        self.logger.info("Scan progress: handled %d files" % num)
                 if not self.run:
                     break
             if not self.run:
                 break
+
+        self.logger.info("Scan finished, handled %d files" % num)
 
     def ensure_dbc(self):
         try:
