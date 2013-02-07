@@ -230,7 +230,7 @@ class App (object):
             'album':      lambda info: info['filedata']['TALB'][0],
             'genre':      lambda info: info['filedata']['TCON'][0],
             'trackno':    lambda info: info['filedata']['TRCK'][0],
-            'year':       lambda info: info['filedata']['TYER'][0],
+            'year':       lambda info: info['filedata']['TDRC'][0],
             'bitrate':    lambda info: info['filedata'].info.bitrate,
             'length':     lambda info: info['filedata'].info.length,
             'samplerate': lambda info: info['filedata'].info.sample_rate,
