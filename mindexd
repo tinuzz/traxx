@@ -307,6 +307,7 @@ class App (object):
         wdd = wm.add_watch(self.rootdir, mask, rec=True, auto_add=True)
 
     def traverse (self, path):
+        self.logger.info("Starting traversal of %s" % path)
         num = 0
         for root, dirs, files in os.walk(path):
             for f in files:
@@ -366,10 +367,13 @@ class App (object):
                     while len(self.queue):
                         with qlock:
                             ff = self.queue.pop()
-                        d,f = os.path.split(ff)
-                        name, extension = os.path.splitext(f)
-                        if extension == ".mp3":
-                            self.handle_file(d, f)
+                        if os.path.isdir(ff):
+                            self.traverse(ff)
+                        else:
+                            d,f = os.path.split(ff)
+                            name, extension = os.path.splitext(f)
+                            if extension == ".mp3":
+                                self.handle_file(d, f)
                     time.sleep(5)
 
             except Exception:
