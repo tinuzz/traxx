@@ -80,6 +80,7 @@ class StreamToLogger(object):
 
 class InotifyEventHandler (pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
+        app.logger.debug("Handling IN_CLOSE_WRITE, trying to acquire lock")
         with qlock:
             app.queue.add(event.pathname)
         app.logger.info("Queued modified file: %s" %  event.pathname)
@@ -89,6 +90,7 @@ class InotifyEventHandler (pyinotify.ProcessEvent):
         app.logger.info("Deleted file: %s" %  event.pathname)
 
     def process_IN_MOVED_TO(self, event):
+        app.logger.debug("Handling IN_MOVED_TO, trying to acquire lock")
         with qlock:
             app.queue.add(event.pathname)
         app.logger.info("Queued moved file: %s" %  event.pathname)
@@ -333,7 +335,7 @@ class App (object):
             self.logger.warn('No database connection. Trying to connect.')
             while db_is_gone and app.run:
                 try:
-                    if not self.db_songtable:
+                    if self.db_songtable == False:
                         self.db_songtable = Table(self.dbtable, self.db_metadata, autoload=True)
                     self.dbc = self.db_engine.connect()
                     db_is_gone = False
@@ -365,8 +367,10 @@ class App (object):
                 # Process the queue forever
                 while self.run:
                     while len(self.queue):
+                        app.logger.debug("Going to pop off the queue, trying to acquire lock")
                         with qlock:
                             ff = self.queue.pop()
+                        app.logger.debug("Got %s from the queue" % ff)
                         if os.path.isdir(ff):
                             self.traverse(ff)
                         else:
