@@ -194,6 +194,7 @@ class App (object):
 
     def write_to_db (self, song, mode="insert"):
         #song['lastseen'] = func.now()
+        song['lastupdate'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
         song['lastseen'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
         #song['lastplayed'] = func.now()
         if mode == "insert":
