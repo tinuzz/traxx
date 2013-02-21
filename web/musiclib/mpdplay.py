@@ -115,6 +115,9 @@ def all_links(files):
 
 def main(files):
 
+    if len(files) == 0:
+        return
+
     # First, connect to MPD. If that doesn't work, there is no use in
     # creating symlinks or doing anything else
 
