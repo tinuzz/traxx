@@ -221,8 +221,9 @@ class App (object):
             self.logger.warn(u'Could not read tag from "%s": %s' % (filename, e))
             return False
 
-        song['path'] = path
-        song['filename'] = fname
+        # Force unicode. This may fail if the system's locale is not UTF-8
+        song['path'] = unicode(path, 'utf-8')
+        song['filename'] = unicode(fname, 'utf-8')
 
         fieldmap  = {
             'artist':     lambda info: info['filedata']['TPE1'][0],
@@ -276,9 +277,11 @@ class App (object):
             handled = False
             sql = select([self.db_songtable], self.db_songtable.c.md5 == song['md5'])
             for row in self.dbc.execute(sql):
-                dbfile =  os.path.join (row[self.db_songtable.c.path], row[self.db_songtable.c.filename])
                 if handled:
                     break
+
+                dbfile =  os.path.join (row[self.db_songtable.c.path], row[self.db_songtable.c.filename])
+                self.logger.debug("Considering DB record: %s" % dbfile)
 
                 # if the path of the file in the database is the same...
                 if row[self.db_songtable.c.path] == song['path'] and row[self.db_songtable.c.filename] == song['filename']:
@@ -297,6 +300,8 @@ class App (object):
                     song['id'] = row[self.db_songtable.c.id]
                     self.write_to_db(song, "update")
                     handled = True
+
+            self.logger.debug("All DB records considered. File handled: %s" % str(handled))
 
             if not handled:
                 self.write_to_db(song, "insert")
