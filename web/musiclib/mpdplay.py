@@ -122,11 +122,7 @@ def main(files):
     # creating symlinks or doing anything else
 
     client = MPDClient()
-    try:
-        client.connect(**CON_ID)
-    except SocketError:
-        print "Error: Cannot connect to MPD."
-        sys.exit(1);
+    client.connect(**CON_ID)
 
     if PASSWORD:
         mpdAuth(client, PASSWORD)
@@ -160,9 +156,18 @@ def main(files):
     # Clean up
     client.disconnect()
 
+    return (pos + 1, len(names))
+
+def cli(files):
+    try:
+        main(files)
+    except SocketError:
+        print "Cannot connect to MPD."
+        sys.exit(1)
+
 # Script starts here
 if __name__ == "__main__":
     files = sys.argv[1:]
-    main(files)
+    cli(files)
 
 # vim: bg=dark:
