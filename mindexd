@@ -80,20 +80,38 @@ class StreamToLogger(object):
 
 class InotifyEventHandler (pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
-        app.logger.debug("Handling IN_CLOSE_WRITE, trying to acquire lock")
-        with qlock:
-            app.queue.add(event.pathname)
-        app.logger.info("Queued modified file: %s" %  event.pathname)
+        name, extension = os.path.splitext(event.pathname)
+        if extension == ".mp3":
+            app.logger.debug("Handling IN_CLOSE_WRITE, trying to acquire lock")
+            with qlock:
+                app.queue.add(event.pathname)
+            app.logger.info("Queued modified file: %s" %  event.pathname)
 
     def process_IN_DELETE(self, event):
         app.delete_from_db(event)
         app.logger.info("Deleted file: %s" %  event.pathname)
 
     def process_IN_MOVED_TO(self, event):
-        app.logger.debug("Handling IN_MOVED_TO, trying to acquire lock")
-        with qlock:
-            app.queue.add(event.pathname)
-        app.logger.info("Queued moved file: %s" %  event.pathname)
+        name, extension = os.path.splitext(event.pathname)
+        if extension == ".mp3":
+            app.logger.debug("Handling IN_MOVED_TO, trying to acquire lock")
+            with qlock:
+                app.queue.add(event.pathname)
+            app.logger.info("Queued moved file: %s" %  event.pathname)
+
+    def process_IN_MOVE_SELF(self, event):
+        if event.dir:
+            app.logger.debug("Handling IN_MOVE_SELF for directory, queuing all files")
+            for root, dirs, files in os.walk(event.pathname):
+                for f in files:
+                    name, extension = os.path.splitext(f)
+                    if extension == ".mp3":
+                        with qlock:
+                            app.queue.add(os.path.join(root,f))
+                        app.logger.info("Queued file in moved directory %s" % f)
+
+    def process_default(self, event):
+        app.logger.debug("Unhandled inotify event: %s" % pformat(event))
 
 class App (object):
 
@@ -309,7 +327,8 @@ class App (object):
     def start_inotify (self):
         self.logger.info("Starting inotify thread")
         wm = pyinotify.WatchManager()
-        mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE | pyinotify.IN_MOVED_TO
+        #mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE | pyinotify.IN_MOVED_TO
+        mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE | pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_FROM | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVE_SELF
         self.notifier = pyinotify.ThreadedNotifier(wm, InotifyEventHandler())
         self.notifier.start()
         wdd = wm.add_watch(self.rootdir, mask, rec=True, auto_add=True)
