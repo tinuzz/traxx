@@ -131,7 +131,6 @@ class App (object):
         self.dbengine  = 'mysql'
         self.dbhost    = 'localhost'
         self.dbuser    = 'musiclib'
-        self.dbpass    = ''
         self.db        = 'musiclib'
         self.dbtable   = 'songlib'
 
@@ -139,7 +138,12 @@ class App (object):
         self.init_done    = False
 
     def process_options (self):
-        parser = argparse.ArgumentParser(description='Music Indexing Daemon', formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog,max_help_position=38))
+        parser = argparse.ArgumentParser(description='Music Indexing Daemon',
+            formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, max_help_position=38, width=120),
+            epilog="""
+                For security, the database password can also be given by setting it in the DBPASS environment variable.
+                The --dbpass option takes precendence over the environment variable.
+            """)
         parser.add_argument('rootdir', help='the directory to index and monitor')
         parser.add_argument('-D', '--daemonize', action='store_true', dest='daemonize', help='run mindexd in the background')
         parser.add_argument('-f', '--full',      action='store_true', dest='full',      help='do a full directory scan at startup')
@@ -162,7 +166,7 @@ class App (object):
 
         self.dbhost    = args.dbhost
         self.dbuser    = args.dbuser
-        self.dbpass    = args.dbpass
+        self.dbpass    = args.dbpass or os.getenv('DBPASS') or ''
         self.db        = args.dbname
 
         # Silently ignore invalid loglevel
