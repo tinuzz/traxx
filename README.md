@@ -138,6 +138,14 @@ by mindexd, you may want to re-run the full scan.
 
 	DBPASS=&lt;yourpassword&gt; mindexd --full --clean --daemonize -u &lt;user&gt; &lt;/path/to/musicdir&gt;
 
+It must be noted, that using '--clean' makes the initial full scan much slower.
+Without '--clean', files that have not been changed (based on file modification
+time), are just skipped, without any database access being necessary. With
+'--clean', all handled files will have their 'lastseen' value updated in the
+database, which takes some time. At the end of the scan, the value for
+'lastseen' is used to identify and delete all files that were not encountered
+during the scan.
+
 
 Database support
 ----------------
