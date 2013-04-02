@@ -110,16 +110,38 @@ Getting started
   This may take a while. Add '-n &lt;dbname&gt;' if your database is not called
   'musiclib'.
 
-	mindexd -u &lt;user&gt; &lt;/path/to/musicdir&gt;
+	DBPASS=&lt;yourpassword&gt; mindexd --full -u &lt;user&gt; &lt;/path/to/musicdir&gt;
 
 * Now start mindexd in the background to monitor you music collection and keep
   the database up to date.
 
-	mindexd -D -u &lt;user&gt; &lt;/path/to/musicdir&gt;
+	DBPASS=&lt;yourpassword&gt; mindexd --daemonize -u &lt;user&gt; &lt;/path/to/musicdir&gt;
 
 Try adding files to your collection, moving files around or editing ID3 tags,
 and see your changes updated in your database within seconds.
 
+If somehow, after some time, changes to your music library have not been processed
+by mindexd, you may want to re-run the full scan.
+
+* To do a quick rescan, only adding newly found files and updating changed
+  files before going back to monitoring your collection, combine the options
+  above:
+
+	DBPASS=&lt;yourpassword&gt; mindexd --full --daemonize -u &lt;user&gt; &lt;/path/to/musicdir&gt;
+
+* To do a full scan + cleanup, which removes files from the database that are
+  no longer found in your collection, run mindexd with the '--clean' option:
+
+	DBPASS=&lt;yourpassword&gt; mindexd --full --clean --daemonize -u &lt;user&gt; &lt;/path/to/musicdir&gt;
+
+
+Database support
+----------------
+
+Mindexd has only been developed and tested with MySQL. However, since
+SQLAlchemy is used for all database access, it should be easy to port to other
+databases, like PostgreSQL. To my knowledge, mindexd does not use any
+database-specific statements, except perhaps for 'func.now()'.
 
 License
 -------
