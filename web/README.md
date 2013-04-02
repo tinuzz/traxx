@@ -10,20 +10,20 @@ musiclib, but for now, it does the following:
 
 * Let you browse the library; display (sub)directories and songs separately
 * Search the database, incrementally display the results (no button click required)
-* Manage the MPD playlist: add/remove songs, clear playlist
+* Manage the MPD playlist: add/remove/move songs, clear playlist
 * Manage MPD: play, pause, stop, skip
-* Display song information (all attributes from the database)
-* Transparently manage the internal MPD database
+* Display song information (selected attributes from the database)
+* Transparently manage MPD's internal music database
 * Add external streams from a pre-configured set to the MPD playlist
 * Disable/enable MPD outputs
-* Works great on desktop, tablet and even smartphone browsers
+* Works great on desktop and tablet browsers, maybe even on smartphones
 
 Musiclib is based on the following principal ideas:
 
 * The external database (for example, in MySQL) is the only source of
   information about the music collection.
 * Database maintenance can/should be done with 'mindexd'. The web application
-	doesn't access your music collection directly.
+	does not access your music collection directly.
 * When a song is added to the playlist, it is transparently added to MPD's
   internal database, by creating a symbolic link to the song in MPD's music directory.
 * All text-data is encoded in unicode/UTF-8.
