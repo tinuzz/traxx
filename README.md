@@ -27,27 +27,31 @@ It uses several external Python modules:
 
 Here's how it's used:
 
-	usage: mindexd [-h] [-D] [-f] [-m] [-H <hostname>] [-u <username>]
-				 [-p <password>] [-n <database>] [-l <file>]
-				 [--loglevel <level>] rootdir
-
+	usage: mindexd [-h] [-D] [-f] [-c] [-m] [-H <hostname>] [-u <username>]
+	               [-p <password>] [-n <database>] [-l <file>] [--loglevel <level>]
+	               rootdir
+	
 	Music Indexing Daemon
-
+	
 	positional arguments:
-		rootdir                             the directory to index and monitor
-
+	  rootdir                             the directory to index and monitor
+	
 	optional arguments:
-		-h, --help                          show this help message and exit
-		-D, --daemonize                     run mindexd in the background (default: False)
-		-f, --full                          do a full directory scan at startup (default: False)
-		-m, --md5                           write MD5 checksum to ID3 (default: False)
-		-H <hostname>, --dbhost <hostname>  database server (default: localhost)
-		-u <username>, --dbuser <username>  database user (default: musiclib)
-		-p <password>, --dbpass <password>  database password (default: None)
-		-n <database>, --dbname <database>  database name (default: musiclib)
-		-l <file>, --logfile <file>         logfile (default: /tmp/mindexd.log)
-		--loglevel <level>                  loglevel, valid levels are
-											<debug|info|warning|error|critical> (default: info)
+	  -h, --help                          show this help message and exit
+	  -D, --daemonize                     run mindexd in the background (default: False)
+	  -f, --full                          do a full directory scan at startup (default: False)
+	  -c, --clean                         after full scan, clean up unseen files from database (slow). This option does not
+	                                      do anything if -f is not specified. (default: False)
+	  -m, --md5                           write MD5 checksum to ID3 (default: False)
+	  -H <hostname>, --dbhost <hostname>  database server (default: localhost)
+	  -u <username>, --dbuser <username>  database user (default: musiclib)
+	  -p <password>, --dbpass <password>  database password (default: None)
+	  -n <database>, --dbname <database>  database name (default: musiclib)
+	  -l <file>, --logfile <file>         logfile (default: /tmp/mindexd.log)
+	  --loglevel <level>                  loglevel, valid levels are <debug|info|warning|error|critical> (default: info)
+	
+	For security, the database password can also be given by setting it in the DBPASS environment variable. The --dbpass
+	option takes precendence over the environment variable.
 
 See 'getting started' below for more information.
 
