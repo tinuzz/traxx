@@ -1,7 +1,16 @@
 musiclib
 ========
 
-Some programs for maintaining a database of mp3s:
+Some programs for maintaining a database of mp3s and a web-based front-end to
+MPD (the Music Player Daemon):
+
+* mindexd, a daemon for keeping a music database up to date
+* musiclib-web, a web-based MPD client, that uses your musiclib database
+* mp3hash.py, a tool, used by mindexd, for hashing the audio in a mp3 file
+
+Musiclib-web (in desparate need for a better name) has its own README.
+[Read it here.](web/README.md)
+
 
 mindexd
 -------
