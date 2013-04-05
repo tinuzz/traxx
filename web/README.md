@@ -47,6 +47,27 @@ Other third-party components are shipped with the application:
 * jQuery PJAX [8] for HTML5 pushState handling
 * Bootstrapx Clickover [9], Bootstrap extension for click managed popovers
 
+Installation
+============
+
+* Install the prerequisites in a <i>virtualenv</i>
+
+	apt-get install python-virtualenv python-dev libmysqlclient-dev
+	cd ~/www
+	virtualenv venv
+	cd venv
+	source bin/activate
+	# for mindexd and web
+	pip install sqlalchemy mysql-python mutagen daemon pyinotify
+	# for web
+	pip install flask python-mpd2
+	git clone https://github.com/tinuzz/musiclib.git
+
+* Edit musiclib/web/musiclib/musiclib.conf
+* Start the server locally:
+
+	python musiclib/web/musiclib/__init__.py
+
 Links
 =====
 
