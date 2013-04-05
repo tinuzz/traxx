@@ -57,9 +57,7 @@ Installation
 	virtualenv venv
 	cd venv
 	source bin/activate
-	# for mindexd and web
 	pip install sqlalchemy mysql-python mutagen daemon pyinotify
-	# for web
 	pip install flask python-mpd2
 	git clone https://github.com/tinuzz/musiclib.git
 
