@@ -52,6 +52,7 @@ Installation
 
 * Install the prerequisites in a <i>virtualenv</i>
 
+	```shell
 	apt-get install python-virtualenv python-dev libmysqlclient-dev
 	cd ~/www
 	virtualenv venv
@@ -60,6 +61,7 @@ Installation
 	pip install sqlalchemy mysql-python mutagen daemon pyinotify
 	pip install flask python-mpd2
 	git clone https://github.com/tinuzz/traxx.git
+	```
 
 * Edit `traxx/web/traxx/traxx.conf`
 * Start the server locally:
