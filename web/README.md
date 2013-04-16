@@ -52,7 +52,7 @@ Installation
 
 * Install the prerequisites in a <i>virtualenv</i>
 
-	```shell
+	```bash
 	apt-get install python-virtualenv python-dev libmysqlclient-dev
 	cd ~/www
 	virtualenv venv
