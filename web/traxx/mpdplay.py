@@ -113,7 +113,7 @@ def all_links(files):
                 names.append(n)
     return names
 
-def main(files):
+def main(files, con_id=None, password=None):
 
     if len(files) == 0:
         return
@@ -122,10 +122,10 @@ def main(files):
     # creating symlinks or doing anything else
 
     client = MPDClient()
-    client.connect(**CON_ID)
+    client.connect(**(con_id or CON_ID))
 
-    if PASSWORD:
-        mpdAuth(client, PASSWORD)
+    if password or PASSWORD:
+        mpdAuth(client, password or PASSWORD)
 
     # Process the command line arguments and create symlinks
     names = all_links(files)
