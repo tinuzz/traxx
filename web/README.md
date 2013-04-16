@@ -61,10 +61,10 @@ Installation
 	pip install flask python-mpd2
 	git clone https://github.com/tinuzz/traxx.git
 
-* Edit traxx/web/traxx/traxx.conf
+* Edit `traxx/web/traxx/traxx.conf`
 * Start the server locally:
 
-	python traxx/web/traxx/__init__.py
+	`python traxx/web/traxx/__init__.py`
 
 Links
 =====
