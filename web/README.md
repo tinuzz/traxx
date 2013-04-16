@@ -36,7 +36,7 @@ forward buttons of your browser to navigate.
 
 The prerequisites for using this software are:
 * A working MPD server, not necessarily on the same host (Debian: mpd)
-* A webserver capable of serving WSGI applications
+* Optional: a webserver capable of serving WSGI applications
 * Flask (&gt;= 0.9, untested with 0.8) and its dependencies (like Werkzeug &amp; Jinja2)
 * [Python-mpd v0.3](https://pypi.python.org/pypi/python-mpd/), the MPD client library for Python (Debian: python-mpd)
 * [SQLAlchemy](http://www.sqlalchemy.org/) (&gt;= 0.7) (Debian: python-sqlalchemy)
