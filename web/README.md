@@ -1,12 +1,12 @@
-musiclib web
-============
+Traxx-web
+=========
 
-This is the web front-end of musiclib. It is a web-based client for MPD [1],
+This is the web front-end of Traxx. It is a web-based client for MPD [1],
 that uses an external database for keeping song information.
 
 It was inspired by Zina [2], but has some different goals and some different
 design fundamentals. Zina has many features that may some day make it into
-musiclib, but for now, it does the following:
+Traxx, but for now, it does the following:
 
 * Let you browse the library; display (sub)directories and songs separately
 * Search the database, incrementally display the results (no button click required)
@@ -18,7 +18,7 @@ musiclib, but for now, it does the following:
 * Disable/enable MPD outputs
 * Works great on desktop and tablet browsers, maybe even on smartphones
 
-Musiclib is based on the following principal ideas:
+Traxx is based on the following principal ideas:
 
 * The external database (for example, in MySQL) is the only source of
   information about the music collection.
@@ -59,12 +59,12 @@ Installation
 	source bin/activate
 	pip install sqlalchemy mysql-python mutagen daemon pyinotify
 	pip install flask python-mpd2
-	git clone https://github.com/tinuzz/musiclib.git
+	git clone https://github.com/tinuzz/traxx.git
 
-* Edit musiclib/web/musiclib/musiclib.conf
+* Edit traxx/web/traxx/traxx.conf
 * Start the server locally:
 
-	python musiclib/web/musiclib/__init__.py
+	python traxx/web/traxx/__init__.py
 
 Links
 =====
