@@ -80,3 +80,8 @@ Links
 * [7] <http://jquery.com/>
 * [8] <https://github.com/defunkt/jquery-pjax>
 * [9] <https://github.com/lecar-red/bootstrapx-clickover>
+
+Screenshots
+===========
+
+![songs](screenshots/traxx_screenshot01s.png)
