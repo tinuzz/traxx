@@ -84,4 +84,4 @@ Links
 Screenshots
 ===========
 
-![songs](screenshots/traxx_screenshot01s.png)
+![songs](../screenshots/traxx_screenshot01s.png)
