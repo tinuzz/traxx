@@ -1,0 +1,8 @@
+<script type="text/javascript">
+	var currentdir='{{ path|urlencode }}';
+</script>
+<div id="currentdiv" style="display: none" data-currentdir="{{ path|urlencode }}"></div>
+<div class="span12">
+	<a href="{{ url_for(plroute) }}?&p={{ path|urlencode }}"><i class="icon-music" title="Stream all"></i></a>
+	<a data-dir="{{ path }}" href="{{ url_for('index_html') }}?&p={{ path|urlencode }}"><i class="icon-play" title="Play all"></i> Play all songs</a>
+</div>

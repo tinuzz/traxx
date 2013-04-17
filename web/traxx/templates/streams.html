@@ -1,0 +1,11 @@
+<table class="table table-striped table-condensed" id="streamstable">
+<tbody>
+{%- for k,v in streams.items() -%}
+	<tr>
+		<td width="15"><i class="icon-play" title="Play now" data-stream="{{ k }}"></i></td>
+		<td><a href="#" class="addstream" data-stream="{{ k }}">{{ v.name }}</a></td>
+	</tr>
+{% endfor -%}
+</tbody>
+</table>
+<br /><br />

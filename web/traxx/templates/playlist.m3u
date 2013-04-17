@@ -1,0 +1,8 @@
+#EXTM3U
+{{ "\n" }}
+
+{%- for r in rows -%}
+#EXTINF:{{ r.length|int }}, {{ r.artist }} - {{ r.title }}
+{{ url_for('serve_file', fileid=r.id, _external=True) }}
+
+{% endfor -%}

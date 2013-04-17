@@ -1,0 +1,29 @@
+<table class="table table-striped table-condensed">
+{%- for r in rows -%}
+	<tr>
+		<td width="15"><a href="#" data-song="{{ r.id }}"><i class="icon-play" title="Play now"></i></a></td>
+		<td width="15"><a href="{{ url_for(plroute, fileid=r.id) }}"><i class="icon-music" title="Stream file"></i></a></td>
+		<td width="15"><a href="{{ url_for('serve_file', fileid=r.id) }}"><i class="icon-download" title="Download file"></i></a></td>
+		<td width="15"><input type="checkbox" name="songs[]" value="{{ r.id }}"/></td>
+		<td width="30" style="text-align: right">
+			<a data-song="{{ r.id }}" href="{{ url_for('index_html') }}?i={{ r.id }}&p={{ path|urlencode }}">{{ r.trackno|escape }}</a>
+		</td>
+		{%- if r.artist == '' and r.title == '' -%}
+		<td colspan="2">
+			<a data-song="{{ r.id }}" href="{{ url_for('index_html') }}?i={{ r.id }}&p={{ path|urlencode }}">{{ r.filename|escape }}</a>
+		</td>
+		{%- else -%}
+		<td>
+			<a data-song="{{ r.id }}" href="{{ url_for('index_html') }}?i={{ r.id }}&p={{ path|urlencode }}">{{ r.artist|escape }}</a>
+		</td>
+		<td>
+			<a data-song="{{ r.id }}" href="{{ url_for('index_html') }}?i={{ r.id }}&p={{ path|urlencode }}">{{ r.title|escape }}</a>
+		</td>
+		{%- endif -%}
+		<td width="80" style="text-align: right;">{{ r.length|humanlength }}</td>
+		<td width="80" style="text-align: right;">{{ r.size|humansize }}</td>
+		<td width="30" style="text-align: right;"><i class="icon-info-sign" data-info="{{ r.id }}"></i></td>
+	</tr>
+{% endfor -%}
+</table>
+<br /><br />

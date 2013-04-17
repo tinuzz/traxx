@@ -1,0 +1,46 @@
+{
+	"dbengine": "mysql",
+	"dbhost":   "localhost",
+	"dbuser":   "USERNAME",
+	"dbpass":   "PASSWORD",
+	"db":       "traxx",
+	"dbtable":  "songlib",
+	"rootdir":  "/data/mp3",
+	"mpdhost":  "localhost",
+	"mpdport":  6600,
+	"numsongs": 150,
+	"streams": {
+	    "radio1": {
+        "name": "Radio 1",
+        "url":  "http://icecast.omroep.nl/radio1-bb-mp3"
+      },
+      "radio2": {
+          "name": "Radio 2",
+          "url":  "http://icecast.omroep.nl/radio2-bb-mp3"
+      },
+      "3fm": {
+          "name": "3FM Serious Radio",
+          "url" : "http://icecast.omroep.nl/3fm-bb-mp3"
+      },
+      "arjazz": {
+          "name": "Arrow Jazz",
+          "url" : "http://81.173.3.133:80/"
+      },
+      "arrow": {
+          "name": "Arrow Rock",
+          "url" : "http://81.173.3.132:80/"
+      },
+      "s040": {
+          "name": "Studio040",
+          "url":  "http://webplayer.studio040.nl/stream.php?type=stream.mp3"
+      },
+      "veronica": {
+          "name": "Veronica",
+          "url":  "http://5593.live.streamtheworld.com:80/VERONICA_SC"
+      },
+      "honderd": {
+          "name": "100%NL",
+          "url":  "http://stream.100p.nl:8000/100pctnl.mp3"
+      }
+	}
+}

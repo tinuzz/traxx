@@ -1,0 +1,20 @@
+<table class="table table-striped table-condensed" id="outputstable">
+<tbody>
+{%- for v in outputs -%}
+	<tr>
+		<td>{{ v.outputname }}</td>
+		<td>
+			<div class="switch switch-mini pull-right" data-on="success" data-off="warning" data-outputid="{{ v.outputid }}">
+				<input type="checkbox" {%- if v.outputenabled == '1' %} checked="checked"{% endif %}>
+			</div>
+		</td>
+	</tr>
+{% endfor -%}
+</tbody>
+</table>
+<br /><br />
+
+
+<!--
+[{'outputenabled': '1', 'outputid': '0', 'outputname': 'HTTP port 16384'}, {'outputenabled': '1', 'outputid': '1', 'outputname': 'Pulse @ Goofy'}, {'outputenabled': '0', 'outputid': '2', 'outputname': 'Pulse @ Party'}, {'outputenabled': '0', 'outputid': '3', 'outputname': 'Pulse @ Lttinuzz'}, {'outputenabled': '0', 'outputid': '4', 'outputname': 'Pulse @ iphion'}, {'outputenabled': '1', 'outputid': '5', 'outputname': 'Pulse @ raspi'}, {'outputenabled': '0', 'outputid': '6', 'outputname': 'Pulse RTP'}]
+-->

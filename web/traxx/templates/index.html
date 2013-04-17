@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Traxx</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="{{ url_for('static', filename='lib/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" media="screen">
+		<link href="{{ url_for('static', filename='lib/bootstrap/css/bootstrap-responsive.min.css') }}" rel="stylesheet" media="screen">
+		<link href="{{ url_for('static', filename='lib/bootstrapSwitch.css') }}" rel="stylesheet" media="screen">
+		<style>
+			/* Some overrides for Bootstrap */
+			.popover.right { margin-left: 20px; }
+			.sortable-placeholder { border: 4px soldi red; }
+			.table-striped tbody > tr:nth-child(odd) > td,
+			.table-striped tbody > tr:nth-child(odd) > th {
+				background-color: #f4f4ff;
+			}
+			.btn-tiny {
+				padding: 0 4px;
+				font-size: 7px;
+				-webkit-border-radius: 2px;
+				-moz-border-radius: 2px;
+				border-radius: 2px;
+			}
+			body {
+				padding-top: 55px;
+			}
+			.navbar-fixed-top .navbar-inner {
+				padding-left: 10px;
+			}
+		</style>
+		<script type=text/javascript>
+			$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		</script>
+	</head>
+	<body>
+		<div class="container-fluid">
+			<div class="masthead">
+				<div class="navbar navbar-fixed-top">
+					<div class="navbar-inner">
+						<a class="brand" href="#">Traxx Music Library</a>
+						<ul class="nav nav-pills pull-right" style="margin-right: 5px">
+							<li><a href="#" id="showplaylistmodal" class="btn btn-small">Playlist</a></li>
+							<li><a href="#" id="showstreams" class="btn btn-small">Streams</a></li>
+							<li><a href="#" id="showoutputs" class="btn btn-small">Outputs</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<!-- search bar -->
+			<div class="row">
+				<div class="span10">
+
+					<!-- breadcrumbs -->
+					<div id="breadcrumbs">
+					</div>
+					<br />
+
+					<div id="searchbar">
+						<form>
+							<div class="input-prepend input-append">
+								<div class="btn-group">
+									<button class="btn dropdown-toggle" data-toggle="dropdown">
+										Files
+										<span class="caret"></span>
+									</button>
+									<ul class="dropdown-menu">
+										<li><a href="#">Files</a></li>
+										<li><a href="#">Folders</a></li>
+									</ul>
+								</div>
+								<input id="search" class="input-xlarge" type="text" name="q" placeholder="Artist or title">
+								<button class="btn" type="button" id="searchbutton">Search</button>
+							</div>
+						</form>
+					</div>
+				</div>
+
+				<div class="span2">
+					<div id="folderjpg" class="pull-right" style="width: 100px; height: 100px">
+					</div>
+				</div>
+
+			</div>
+			<hr style="margin: 5px 0" />
+
+			<!-- list of directories, populated with jQuery AJAX -->
+			<div class="row">
+				<div id="dirlist">
+				</div>
+			</div>
+			<br />
+
+			<!-- list of songs, populated with jQuery AJAX -->
+			<div class="row">
+				<div class="span12">
+					<b>Songs</b>
+					<div class="btn-group pull-right">
+						<button id="sortbutton" class="btn dropdown-toggle" data-toggle="dropdown">
+							Sort
+							<span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu">
+							<li><a href="#" data-sort="trackno">Track no.</a></li>
+							<li><a href="#" data-sort="artist">Artist</a></li>
+							<li><a href="#" data-sort="title">Title</a></li>
+							<li><a href="#" data-sort="length">Length</a></li>
+							<li><a href="#" data-sort="size">Size</a></li>
+						</ul>
+					</div>
+					<br /><br />
+					<div id="songlist">
+					</div>
+				</div>
+			</div>
+		</div> <!-- end container -->
+
+		<!-- playlist modal -->
+		<div class="modal hide" id="playlistmodal">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3 id="plhead" class="muted" style="display: inline"><span id="pltxt">Playlist</span></h3>
+				<span class="pull-right" style="margin-top: 5px; margin-right: 15px">Status: <span id="mpdstatus" class="text-info">unknown</span></span> &nbsp; &nbsp;
+			</div>
+			<div class="modal-body" id="mpdplaylist">
+			</div>
+			<div class="modal-footer">
+				<a href="#" class="btn" id="mpd_play"><i class="icon-play"></i></a>
+				<a href="#" class="btn" id="mpd_stop"><i class="icon-stop"></i></a>
+				<a href="#" class="btn" id="mpd_pause"><i class="icon-pause"></i></a>
+				<a href="#" class="btn" id="mpd_prev"><i class="icon-fast-backward"></i></a>
+				<a href="#" class="btn" id="mpd_next"><i class="icon-fast-forward"></i></a>
+				<a href="#" class="btn" id="mpd_clear"><i class="icon-trash"></i></a>
+				<a href="#" class="btn" id="mpd_cleanup"><i class="icon-remove-circle"></i></a>
+			</div>
+		</div>
+
+		<!-- streams modal -->
+		<div class="modal hide" id="streamsmodal">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3 class="muted">Streams</h3>
+			</div>
+			<div class="modal-body" id="streamsbody">
+			</div>
+			<div class="modal-footer">
+				<a href="#" class="btn" data-dismiss="modal">Close</a>
+			</div>
+		</div>
+
+		<!-- outputs modal -->
+		<div class="modal hide" id="outputsmodal">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3 class="muted">Outputs</h3>
+			</div>
+			<div class="modal-body" id="outputsbody">
+			</div>
+			<div class="modal-footer">
+				<a href="#" class="btn" data-dismiss="modal">Close</a>
+			</div>
+		</div>
+
+		<!-- image modal -->
+		<div class="modal hide" id="imagemodal">
+			<div class="modal-body" id="outputsbody">
+				<img id="imageinmodal" />
+			</div>
+		</div>
+
+
+		<!-- scripts -->
+		<script src="{{ url_for('static', filename='lib/jquery.js') }}"></script>
+		<script src="{{ url_for('static', filename='lib/jquery-ui/js/jquery-ui-1.10.1.custom.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='lib/bootstrap/js/bootstrap.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='lib/bootstrapx-clickover.js') }}"></script>
+		<script src="{{ url_for('static', filename='lib/pjax/jquery.pjax.js') }}"></script>
+		<script src="{{ url_for('static', filename='lib/spin.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='lib/jquery.spin.js') }}"></script>
+		<script src="{{ url_for('static', filename='lib/bootstrapSwitch.js') }}"></script>
+		<script type="text/javascript">
+			var initpath = '{{ path|urlencode }}';
+		</script>
+		<script src="{{ url_for('static', filename='site.js') }}?{{ js_mtime }}"></script>
+	</body>
+</html>

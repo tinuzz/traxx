@@ -1,0 +1,15 @@
+<script type="text/javascript">
+	var currentdir='{{ path|urlencode }}';
+</script>
+<div id="currentdiv" style="display: none" data-currentdir="{{ path|urlencode }}"></div>
+{% set counter = 0 -%}
+<div class="span6">
+{% for r in rows -%}
+	{% if counter >= numpercol -%}
+		</div><div class="span6">
+		{% set counter = 0 -%}
+	{% endif -%}
+	<a data-pjax href="{{ url_for('index_html') }}?p={{ path|urlencode }}%2F{{ r.npath|urlencode }}">{{ r.npath }}</a><br />
+	{% set counter = counter + 1 -%}
+{% endfor -%}
+</div>

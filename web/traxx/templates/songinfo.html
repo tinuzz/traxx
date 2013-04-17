@@ -1,0 +1,34 @@
+<table>
+<tr>
+<td colspan="2"><b>Filename</b><br/></td>
+</tr>
+<tr>
+<td colspan="2">{{ row.path }}/{{ row.filename }}<br/></td>
+</tr>
+<tr>
+<td><b>Album</b><br /></td>
+<td>{{ row.album }}<br /></td>
+</tr>
+<tr>
+<td><b>Size</b><br /></td>
+<td>{{ row.size }} bytes<br /></td>
+</tr>
+<tr>
+<td><b>Modified</b><br /></td>
+<td>{{ humanmtime }}<br /></td>
+</tr>
+<tr>
+<td><b>Year</b><br /></td>
+<td>{{ row.year }}<br /></td>
+</tr>
+<tr>
+<td><b>Genre</b><br /></td>
+<td>{{ row.genre }}<br /></td>
+</tr>
+<tr>
+<td><b>Bitrate</b><br /></td>
+<td>{{ row.bitrate|humanbps }} ({% if row.bitratecl == 'C' %}CBR{% else %}VBR{% endif %})<br /></td>
+</tr>
+</table>
+<br />
+<button class='btn' data-dismiss='clickover' >Close</button>
