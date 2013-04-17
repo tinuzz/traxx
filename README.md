@@ -36,7 +36,7 @@ day it may catch up, but for now, it does the following:
 * Transparently manage MPD's internal music database
 * Add external streams from a pre-configured set to the MPD playlist
 * Disable/enable MPD outputs
-* Works great on desktop and tablet browsers, maybe even on smartphones
+* Responsive design, works great on desktop and tablet browsers, maybe even on smartphones
 
 ![songs](screenshots/traxx_screenshot01s.png)
 
