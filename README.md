@@ -38,6 +38,8 @@ day it may catch up, but for now, it does the following:
 * Disable/enable MPD outputs
 * Responsive design, works great on desktop and tablet browsers, maybe even on smartphones
 
+A screenshot:
+
 ![songs](screenshots/traxx_screenshot01s.png)
 
 Traxx is based on the following principal ideas:
