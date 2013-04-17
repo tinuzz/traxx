@@ -169,5 +169,3 @@ def cli(files):
 if __name__ == "__main__":
     files = sys.argv[1:]
     cli(files)
-
-# vim: bg=dark:
