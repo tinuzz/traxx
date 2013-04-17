@@ -92,33 +92,33 @@ It uses several external Python modules:
 
 Here's how it's used:
 
-	```
-	usage: traxx-indexd [-h] [-D] [-f] [-c] [-m] [-H <hostname>] [-u <username>]
-	               [-p <password>] [-n <database>] [-l <file>] [--loglevel <level>]
-	               rootdir
-	
-	Music Indexing Daemon
-	
-	positional arguments:
-	  rootdir                             the directory to index and monitor
-	
-	optional arguments:
-	  -h, --help                          show this help message and exit
-	  -D, --daemonize                     run traxx-indexd in the background (default: False)
-	  -f, --full                          do a full directory scan at startup (default: False)
-	  -c, --clean                         after full scan, clean up unseen files from database (slow). This option does not
-	                                      do anything if -f is not specified. (default: False)
-	  -m, --md5                           write MD5 checksum to ID3 (default: False)
-	  -H <hostname>, --dbhost <hostname>  database server (default: localhost)
-	  -u <username>, --dbuser <username>  database user (default: traxx)
-	  -p <password>, --dbpass <password>  database password (default: None)
-	  -n <database>, --dbname <database>  database name (default: traxx)
-	  -l <file>, --logfile <file>         logfile (default: /tmp/traxx-indexd.log)
-	  --loglevel <level>                  loglevel, valid levels are <debug|info|warning|error|critical> (default: info)
-	
-	For security, the database password can also be given by setting it in the DBPASS environment variable. The --dbpass
-	option takes precendence over the environment variable.
-	```
+```
+usage: traxx-indexd [-h] [-D] [-f] [-c] [-m] [-H <hostname>] [-u <username>]
+               [-p <password>] [-n <database>] [-l <file>] [--loglevel <level>]
+               rootdir
+
+Music Indexing Daemon
+
+positional arguments:
+  rootdir                             the directory to index and monitor
+
+optional arguments:
+  -h, --help                          show this help message and exit
+  -D, --daemonize                     run traxx-indexd in the background (default: False)
+  -f, --full                          do a full directory scan at startup (default: False)
+  -c, --clean                         after full scan, clean up unseen files from database (slow). This option does not
+                                      do anything if -f is not specified. (default: False)
+  -m, --md5                           write MD5 checksum to ID3 (default: False)
+  -H <hostname>, --dbhost <hostname>  database server (default: localhost)
+  -u <username>, --dbuser <username>  database user (default: traxx)
+  -p <password>, --dbpass <password>  database password (default: None)
+  -n <database>, --dbname <database>  database name (default: traxx)
+  -l <file>, --logfile <file>         logfile (default: /tmp/traxx-indexd.log)
+  --loglevel <level>                  loglevel, valid levels are <debug|info|warning|error|critical> (default: info)
+
+For security, the database password can also be given by setting it in the DBPASS environment variable. The --dbpass
+option takes precendence over the environment variable.
+```
 
 Getting started
 ===============
@@ -130,18 +130,18 @@ Database initialization
   anything you want.
 * Add the songtable to the database, from the provided SQL file.
 
-	`mysql -u &lt;user&gt; traxx &lt; traxx-mysql.sql`
+	`mysql -u <user> traxx < traxx-mysql.sql`
 
 * If your mp3 collection is large, perform an initial scan in the foreground.
   This may take a while. Add '-n &lt;dbname&gt;' if your database is not called
   'traxx'.
 
-	`DBPASS=&lt;yourpassword&gt; traxx-indexd --full -u &lt;user&gt; &lt;/path/to/musicdir&gt;`
+	`DBPASS=<yourpassword> traxx-indexd --full -u <user> </path/to/musicdir>`
 
 * Now start `traxx-indexd` in the background to monitor you music collection and keep
   the database up to date.
 
-	`DBPASS=&lt;yourpassword&gt; traxx-indexd --daemonize -u &lt;user&gt; &lt;/path/to/musicdir&gt;`
+	`DBPASS=<yourpassword> traxx-indexd --daemonize -u <user> </path/to/musicdir>`
 
 Try adding files to your collection, moving files around or editing ID3 tags,
 and see your changes updated in your database within seconds.
@@ -153,12 +153,12 @@ by traxx-indexd, you may want to re-run the full scan.
   files before going back to monitoring your collection, combine the options
   above:
 
-	`DBPASS=&lt;yourpassword&gt; traxx-indexd --full --daemonize -u &lt;user&gt; &lt;/path/to/musicdir&gt;`
+	`DBPASS=<yourpassword> traxx-indexd --full --daemonize -u <user> </path/to/musicdir>`
 
 * To do a full scan + cleanup, which removes files from the database that are
   no longer found in your collection, run traxx-indexd with the '--clean' option:
 
-	`DBPASS=&lt;yourpassword&gt; traxx-indexd --full --clean --daemonize -u &lt;user&gt; &lt;/path/to/musicdir&gt;`
+	`DBPASS=<yourpassword> traxx-indexd --full --clean --daemonize -u <user> </path/to/musicdir>`
 
 It must be noted, that using '--clean' makes the initial full scan much slower.
 Without '--clean', files that have not been changed (based on file modification
@@ -202,27 +202,27 @@ present ID3 tags will not influence the hash. This way, the hash can be
 used to detect duplicate songs, even when their tags are different.
 The calculated hash can optionally be stored inside the mp3 as a TXXX tag.
 
-	```
-	usage: mp3hash.py [-h] [-s] filename
+```
+usage: mp3hash.py [-h] [-s] filename
 
-	mp3hash - calculate a hash of an mp3, excluding any ID3 tags, optionally
-	storing the hash in an ID3 tag
+mp3hash - calculate a hash of an mp3, excluding any ID3 tags, optionally
+storing the hash in an ID3 tag
 
-	positional arguments:
-		filename     the file to calculate a hash for
+positional arguments:
+	filename     the file to calculate a hash for
 
-	optional arguments:
-		-h, --help   show this help message and exit
-		-s, --store  store the calculted hash in the ID3 tag (default: False)
-	```
+optional arguments:
+	-h, --help   show this help message and exit
+	-s, --store  store the calculted hash in the ID3 tag (default: False)
+```
 
 It can also be used as a module from another python program:
 
-	```python
-	import mp3hash
-	h = mp3hash.mp3hash ()
-	md5 = h.mp3hash (filename)[0]
-	```
+```python
+import mp3hash
+h = mp3hash.mp3hash ()
+md5 = h.mp3hash (filename)[0]
+```
 
 Known limitation: it cannot create a new ID3 tag, so saving the MD5 hash
 to a file that doesn't already have a tag will fail.
@@ -232,18 +232,18 @@ mp3hash_all
 
 Mp3hash_all uses mp3hash.py to recursively tag all mp3s in a directory tree.
 
-	```
-	usage: mp3hash_all [-h] directory
+```
+usage: mp3hash_all [-h] directory
 
-	mp3hash_all - recursively traverse a directory, hashing all found mp3s and
-	store the hash in the ID3 tag of the file
+mp3hash_all - recursively traverse a directory, hashing all found mp3s and
+store the hash in the ID3 tag of the file
 
-	positional arguments:
-		directory   the directory to scan for mp3s
+positional arguments:
+	directory   the directory to scan for mp3s
 
-	optional arguments:
-		-h, --help  show this help message and exit
-	```
+optional arguments:
+	-h, --help  show this help message and exit
+```
 
 License
 -------
