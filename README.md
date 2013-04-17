@@ -97,7 +97,7 @@ usage: traxx-indexd [-h] [-D] [-f] [-c] [-m] [-H <hostname>] [-u <username>]
                [-p <password>] [-n <database>] [-l <file>] [--loglevel <level>]
                rootdir
 
-Music Indexing Daemon
+Traxx Music Indexing Daemon
 
 positional arguments:
   rootdir                             the directory to index and monitor
