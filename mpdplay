@@ -2,7 +2,7 @@
 import sys
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'web', 'musiclib'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'web', 'traxx'))
 
 import mpdplay
 

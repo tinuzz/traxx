@@ -15,16 +15,15 @@
 #   limitations under the License.
 
 """
-mindexd - Music Indexing Daemon
+traxx-indexd - Traxx Music Indexing Daemon
 
-Mindexd is a daemon that indexes a music collection in the background.
-Given a root-directory, it traverses it and all its subdirectories,
-adding any music file it finds to a MySQL database, or updating its
+Traxx-indexd is a multi-threaded daemon that indexes a music collection in the
+background.  Given a root-directory, it traverses it and all its
+subdirectories, adding any music file it finds to a database, or updating its
 properties in the database if the song is already present.
 
-After finishing the initial scan of the tree, it monitors the tree
-(using the inotify framework) and re-scans files that have been
-modified.
+After finishing the initial scan of the tree, it monitors the tree (using the
+inotify framework) and re-scans files that have been modified.
 
 It uses several external Python modules:
 - sqlalchemy for database access
@@ -120,7 +119,7 @@ class App (object):
         self.daemonize    = False
         self.rootdir      = False
         self.song         = {}
-        self.logfile      = '/tmp/mindexd.log'
+        self.logfile      = '/tmp/traxx-indexd.log'
         self.level        = logging.INFO
         self.queue        = set([])
         self.initdb       = False
@@ -131,22 +130,22 @@ class App (object):
 
         self.dbengine  = 'mysql'
         self.dbhost    = 'localhost'
-        self.dbuser    = 'musiclib'
-        self.db        = 'musiclib'
+        self.dbuser    = 'traxx'
+        self.db        = 'traxx'
         self.dbtable   = 'songlib'
 
         # When the optional full scan is finished, this flag is set to True.
         self.init_done    = False
 
     def process_options (self):
-        parser = argparse.ArgumentParser(description='Music Indexing Daemon',
+        parser = argparse.ArgumentParser(description='Traxx Music Indexing Daemon',
             formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(prog, max_help_position=38, width=120),
             epilog="""
                 For security, the database password can also be given by setting it in the DBPASS environment variable.
                 The --dbpass option takes precendence over the environment variable.
             """)
         parser.add_argument('rootdir', help='the directory to index and monitor')
-        parser.add_argument('-D', '--daemonize', action='store_true', dest='daemonize', help='run mindexd in the background')
+        parser.add_argument('-D', '--daemonize', action='store_true', dest='daemonize', help='run traxx-indexd in the background')
         parser.add_argument('-f', '--full',      action='store_true', dest='full',      help='do a full directory scan at startup')
         parser.add_argument('-c', '--clean',     action='store_true', dest='clean',
             help='after full scan, clean up unseen files from database (slow). This option does not do anything if -f is not specified.')
@@ -211,6 +210,9 @@ class App (object):
         self.logger.info("- Full directory scan: %s" % str(self.initdb))
         self.logger.info("- Logfile            : %s" % self.logfile)
         self.logger.info("- Loglevel           : %s" % logging._levelNames[self.level])
+        self.logger.info("- Database engine    : %s" % self.dbengine)
+        self.logger.info("- Database server    : %s" % self.dbhost)
+        self.logger.info("- Database           : %s" % self.db)
 
     # Delete a record from the database. Takes a pyinotify event as arg.
     def delete_from_db (self, event):
@@ -397,7 +399,7 @@ class App (object):
 
     def main(self):
         if self.setup_logging():
-            self.logger.info("Starting application")
+            self.logger.info("Starting Traxx-indexd")
             self.log_config()
             self.start_inotify()
 
