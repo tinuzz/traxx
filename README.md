@@ -5,19 +5,19 @@ Traxx is a collection of applications for managing and accessing a music
 collection. It consists of the following components:
 
 * Traxx-web - a web-based client for [MPD](http://mpd.wikia.com/), that uses
-  an external database (p.e. in MySQL) for keeping song information.
+  an external database (p.e. in [MySQL](http://www.mysql.com/downloads/mysql/)) for keeping song information.
 * Traxx-indexd - a daemon for keeping the music database up to date
 * Some tools and libraries to support Traxx-web and traxx-indexd.
 
-All tools are written in Python (developed and tested with 2.7).
+All tools are written in [Python](http://www.python.org/) (developed and tested with 2.7).
 At this point, Traxx only supports mp3 files and only looks at ID3 tags.
 
 Database support
 ----------------
 
 Traxx has only been developed and tested with MySQL. However, since
-SQLAlchemy is used for all database access, it should be easy to port to other
-databases, like PostgreSQL. To my knowledge, Traxx-web and Traxx-indexd do not
+[SQLAlchemy](http://www.sqlalchemy.org/) is used for all database access, it should be easy to port to other
+databases, like [PostgreSQL](http://www.postgresql.org/). To my knowledge, Traxx-web and Traxx-indexd do not
 use any database-specific statements, except perhaps for 'func.now()'.
 
 Traxx-web
@@ -53,15 +53,16 @@ Traxx is based on the following principal ideas:
 * All text-data is encoded in unicode/UTF-8.
 
 Traxx-web is written in Python (developed and tested with 2.7), using
-the [Flask microframework](http://flask.pocoo.org/). At the front, it uses Twitter Bootstrap and
-jQuery. The interface makes heavy use of AJAX, but at the same time maintains
+the [Flask microframework](http://flask.pocoo.org/). At the front, it usesi
+[Twitter Bootstrap](http://twitter.github.io/bootstrap/) and
+[jQuery](http://jquery.com/). The interface makes heavy use of AJAX, but at the same time maintains
 the ability to bookmark the content you are viewing and use the back and
 forward buttons of your browser to navigate.
 
 The prerequisites for using this software are:
 * A working MPD server, not necessarily on the same host (Debian: mpd)
 * Optional: a webserver capable of serving WSGI applications
-* Flask (&gt;= 0.9, untested with 0.8) and its dependencies (like Werkzeug &amp; Jinja2)
+* [Flask](http://flask.pocoo.org/) (&gt;= 0.9, untested with 0.8) and its dependencies (like Werkzeug &amp; Jinja2)
 * [Python-mpd v0.3](https://pypi.python.org/pypi/python-mpd/), the MPD client library for Python (Debian: python-mpd)
 * [SQLAlchemy](http://www.sqlalchemy.org/) (&gt;= 0.7) (Debian: python-sqlalchemy)
 
