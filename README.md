@@ -32,6 +32,7 @@ day it may catch up, but for now, it does the following:
 * Search the database, incrementally display the results (no button click required)
 * Manage the MPD playlist: add/remove/move songs, clear/cleanup playlist
 * Manage MPD: play, pause, stop, skip
+* Download and stream songs to your client for local playback
 * Display song information (selected attributes from the database)
 * Transparently manage MPD's internal music database
 * Add external streams from a pre-configured set to the MPD playlist
