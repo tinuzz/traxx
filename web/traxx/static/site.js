@@ -1,12 +1,27 @@
-var updating = false;
-var searching = false;
-var idling = false;
-var timeout;
-var inputtimer;
-var lastsort = 'trackno';
-var doscroll = false;
+// Global variables
+var
+	// A flag indicating whether the playlist is currently being updated
+	updating = false,
 
-// Get a list of subdirectories with AJAX
+	// A flag indicating whether a search request is cuurently in progress
+	searching = false,
+
+	// A flag indicating whether an 'idle' request is currently running
+	idling = false,
+
+	// A timeout ID used for delayed restarting of the 'idle' process
+	timeout,
+
+	// A timeout ID used for delaying the incremental search function
+	inputtimer,
+
+	// A gloabl record of the last chosen sort field
+	lastsort = 'trackno',
+
+	// A flag indicating whether the playlist should scroll to the current item
+	doscroll = false;
+
+// Get a list of subdirectories for a given path with AJAX
 function html_dirlist(path) {
 	$.get($SCRIPT_ROOT + "/ajax/html_dirlist/?p="+path, function(data) {
 		$('#dirlist').html(data);
@@ -15,6 +30,7 @@ function html_dirlist(path) {
 	});
 }
 
+// Initialize the 'Play all songs' link
 function add_dir_click(path) {
 	$('a[data-dir]').click(function() {
 		mpd_add_dir(path, $(this));
@@ -22,7 +38,7 @@ function add_dir_click(path) {
 	});
 }
 
-// Get a list of songs with AJAX
+// Get a list of songs for a given path with AJAX, using the given sort field
 function html_songlist(path, sort) {
 
 	var url = $SCRIPT_ROOT + "/ajax/html_songlist/?p="+path;
@@ -31,10 +47,14 @@ function html_songlist(path, sort) {
 		lastsort = sort;
 	}
 
+	// Show a spinner while loading the songlist
 	$("#songlist").html('&nbsp;  &nbsp; &nbsp;Loading...').spin({ lines: 8, length: 2, width: 2, radius: 3, left: 0 });
+
+	// Get and process the songlist data
 	$.get(url, function(data) {
 		$('#songlist').html(data);
 
+		// Initialize the song links
 		$('a[data-song]').click(function() {
 			songid = $(this).attr('data-song');
 			i = $(this).find('i[class="icon-play"]');
@@ -54,11 +74,13 @@ function html_songlist(path, sort) {
 	folder_jpg(path);
 }
 
+// Load 'folder.jpg' and initialize a click handler for the image
 function folder_jpg(path) {
 	$('#folderjpg').html('<img id="folderjpgimg" src="' + $SCRIPT_ROOT + '/folder.jpg?p=' + path + '" />');
+
+	// On click, load the image in a modal div, set the size and show the modal
 	$('#folderjpgimg').click(function() {
 		src=$(this).attr('src');
-		//$('#imageinmodal').attr('src', src).css('height: 250px');
 		$('#imagemodal').css('width', '430px');
 		$('#imageinmodal').attr('src', src).on('load', function () {
 			$(this).css('height', '400px');
@@ -67,7 +89,7 @@ function folder_jpg(path) {
 	});
 }
 
-// Get song info with AJAX
+// Initialize the 'Song info' click handler to show an AJAX-primed clickover
 function init_songinfo() {
 	$('.icon-info-sign').clickover({beforeShow: function() {
 			element = this
@@ -86,8 +108,8 @@ function init_songinfo() {
 	});
 }
 
+// Show the breadcrumbs naviation in the designated div
 function show_breadcrumbs(currentdir) {
-	//comp = decodeURIComponent(currentdir).replace(/\+/g, ' ').split('/');
 	comp = decodeURIComponent(currentdir).split('/');
 	str = '<i class="icon-chevron-right"></i> <b><a data-pjax href="' + $SCRIPT_ROOT + '/">Start</a> <i class="icon-chevron-right"></i> ';
 	link = encodeURIComponent('/');
@@ -101,8 +123,8 @@ function show_breadcrumbs(currentdir) {
 	$('#breadcrumbs').html(str);
 }
 
+/* not used ?
 function infopop (element,data) {
-
 		options = { 'content': data }
 		options['placement'] = 'right';
 		options['trigger'] = 'manual';
@@ -111,10 +133,12 @@ function infopop (element,data) {
 		$(element).clickover(options);
 		$(element).clickover('show');
 }
+*/
 
-function pop (element,data,placement,hide) {
+// Show a popover near the given element, with given content
+function pop( element, data, placement, hide ) {
 		var do_hide = 2000;
-		options = { 'content': data }
+		var options = { 'content': data }
 		if (typeof placement != 'undefined') {
 			options['placement'] = placement
 		}
@@ -129,12 +153,14 @@ function pop (element,data,placement,hide) {
 		}
 }
 
+// Call 'mpd_add_dir' for given dir
 function mpd_add_dir(dir, element) {
 	$.get($SCRIPT_ROOT + "/ajax/mpd_add_dir/?p=" + dir + '&s=' + lastsort, function(data) {
 		pop(element, data);
 	});
 }
 
+// Call 'mpd_add' for given song ID, optionally telling the server to play it immediately
 function mpd_add(id, element, playnow) {
 	param = '';
 	if (typeof(playnow) != 'undefined') {
@@ -226,12 +252,6 @@ function load_playlist_if_not_updating () {
 function show_playlist() {
 		$('#playlistmodal').modal();
 		idle = true;
-
-		/* Fires too often
-		$('#playlistmodal').on('hidden', function() {
-			idle = false;
-		});
-		*/
 		doscroll = true;
 		load_playlist_if_not_updating();
 }
@@ -291,30 +311,20 @@ function handle_search (sort) {
 	});
 }
 
-jQuery(document).ready(function($) {
-
-	// initialize the AJAX containers, using the path from the global 'initpath'
-	// variable, which is set from the index.html template. It's already urlencoded.
-	html_dirlist(initpath);
-	html_songlist(initpath);
-
-	//plsize = { width: '[Audio:"400px"]', height: '[Audio:"100px"]' };
-	//$('#jquery_jplayer').jPlayer({swfPath:"lib/jplayer", backgroundColor:"#00FFFF", size: plsize, solution: 'html' });
-	//$('#jquery_jplayer').jPlayer({swfPath:"lib/jplayer", backgroundColor:"#00FFFF", ready: function() {
-	//	$('jplayermodal').modal();
-	//} });
+function init_playlist_button() {
+	$('#showplaylistmodal').click(function() {
+		show_playlist()
+		return false;
+	});
 	$('#playlistmodal').on('show', function () {
 		$(this).css({'margin-left': function () {
 				return -($(this).width() / 2);
 			}
 		});
 	});
+}
 
-	$('#showplaylistmodal').click(function() {
-		show_playlist()
-		return false;
-	});
-
+function init_streams_button() {
 	$('#showstreams').click(function() {
 		$('#streamsmodal').modal();
 		$('#streamsmodal').find('.modal-body').load($SCRIPT_ROOT + "/ajax/html_streams/", function () {
@@ -324,7 +334,9 @@ jQuery(document).ready(function($) {
 			});
 		});
 	});
+}
 
+function init_outputs_button() {
 	$('#showoutputs').click(function() {
 		$('#outputsmodal').modal();
 		$('#outputsmodal').find('.modal-body').load($SCRIPT_ROOT + "/ajax/html_outputs/", function () {
@@ -342,7 +354,23 @@ jQuery(document).ready(function($) {
 			})
 		});
 	});
+}
 
+function init_search() {
+	/* Near-real-time search. On input, wait 600ms for more input before doing search */
+	$('#search').on('input', function() {
+		if (inputtimer) {
+			clearTimeout(inputtimer);
+		}
+		inputtimer = setTimeout(function () { handle_search(); }, 600);
+	});
+
+	$('#searchbutton').click(function() {
+		handle_search();
+	});
+}
+
+function init_sort_button_links() {
 	$('a[data-sort]').click(function() {
 		sortcol = $(this).attr('data-sort');
 		if ($('#currentdiv').attr('data-currentdir') == 'SEARCHRESULT') {
@@ -355,8 +383,9 @@ jQuery(document).ready(function($) {
 		$('#sortbutton').dropdown('toggle');
 		return false;
 	});
+}
 
-	/* Playlist modal, player control buttons */
+function init_player_control_buttons() {
 	$.each(['play','stop','pause','prev','next'], function(index,value) {
 		$('#mpd_'+ value).click(function(e) {
 			mpd_cmd(value, $(this), {'placement': 'top'});
@@ -366,14 +395,6 @@ jQuery(document).ready(function($) {
 	});
 
 	$('#mpd_clear').click(function(e) {
-		/*
-		bootbox.confirm('Clear playlist. Are you sure?', function (do_clear) {
-			if (do_clear) {
-				mpd_cmd('clear', $(this), {'placement': 'top'});
-			}
-			//return false;
-		});
-		*/
 		if (confirm('Clear entire playlist. Are you sure?')) {
 			mpd_cmd('clear', $('#mpdplaylist'), {'placement': 'top'});
 		}
@@ -386,26 +407,36 @@ jQuery(document).ready(function($) {
 		}
 		return false;
 	});
+}
 
+function init_pjax() {
+	// Use PJAX for #dirlist div
 	$(document).pjax('a[data-pjax]', '#dirlist');
 
+	// When dirlist is loaded, initialize related elements
 	$(document).on('pjax:end', function(e) {
 		currentdir = $('#currentdiv').attr('data-currentdir');
 		add_dir_click(currentdir);
 		show_breadcrumbs(currentdir);
 		html_songlist(currentdir);
 	})
+}
 
-	/* Near-real-time search. On input, wait 600ms for more input before doing search */
-	$('#search').on('input', function() {
-		//if (typeof inputtimer !== 'undefined')
-		if (inputtimer) {
-			clearTimeout(inputtimer);
-		}
-		inputtimer = setTimeout(function () { handle_search(); }, 600);
-	});
+jQuery(document).ready(function($) {
 
-	$('#searchbutton').click(function() {
-		handle_search();
-	});
+	// Initialize the AJAX containers using the path from the global 'initpath'
+	// variable, which is set from the index.html template. It's already
+	// urlencoded.
+	html_dirlist(initpath);
+	html_songlist(initpath);
+
+	// Initilize UI event handlers
+	init_playlist_button();
+	init_streams_button();
+	init_outputs_button();
+	init_search();
+	init_sort_button_links();
+	init_player_control_buttons();
+	init_pjax();
+
 });
