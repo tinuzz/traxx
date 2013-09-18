@@ -242,7 +242,11 @@ class App (object):
         filename = os.path.join (path, fname)
 
         os.stat_float_times(False)
-        info['statinfo'] = os.stat(filename)
+        try:
+            info['statinfo'] = os.stat(filename)
+        except OSError as e:
+            self.logger.warn(u'Could not stat file "%s": %s' % (filename, e))
+            return False
         try:
             info['filedata'] = mutagen.File(filename)
         except Exception as e:
